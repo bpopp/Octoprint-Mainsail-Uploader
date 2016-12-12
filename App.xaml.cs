@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace OctoUploader
 {
@@ -30,12 +31,18 @@ namespace OctoUploader
 
             System.Windows.Controls.ContextMenu cm = new System.Windows.Controls.ContextMenu();
 
-            System.Windows.Controls.MenuItem menuItemSettings =  new System.Windows.Controls.MenuItem { Header = "S_ettings" };
+            System.Windows.Controls.MenuItem menuItemOpen =  new System.Windows.Controls.MenuItem { Header = "O_pen Octoprint" };
+            menuItemOpen.Click += open_Click;            
+
+            System.Windows.Controls.MenuItem menuItemSettings = new System.Windows.Controls.MenuItem { Header = "S_ettings" };
             menuItemSettings.Click += settings_Click;
+
 
             System.Windows.Controls.MenuItem menuItemExit = new System.Windows.Controls.MenuItem { Header = "E_xit" };
             menuItemExit.Click += exit_Click;
 
+            cm.Items.Add(menuItemOpen);
+            cm.Items.Add(new Separator());
             cm.Items.Add(menuItemSettings);
             cm.Items.Add(menuItemExit);
             tbi.ContextMenu = cm;
@@ -49,6 +56,11 @@ namespace OctoUploader
                 ShowSettings();
             }
 
+        }
+
+        private void open_Click(object sender, RoutedEventArgs e)
+        {
+            LaunchOctoprint();
         }
 
         private void settings_Click(object sender, RoutedEventArgs e)
@@ -129,6 +141,11 @@ namespace OctoUploader
             return result;
         }
 
+        public void LaunchOctoprint ()
+        {
+            System.Diagnostics.Process.Start(OctoUploader.Properties.Settings.Default.ServerAddress);
+        }
+
         public void ShowSettings()
         {
             if (settingsWindow == null)
@@ -149,7 +166,7 @@ namespace OctoUploader
 
         private void Tbi_TrayMouseDoubleClick(object sender, RoutedEventArgs e)
         {
-            ShowSettings();
+            LaunchOctoprint();
         }
     }
 
