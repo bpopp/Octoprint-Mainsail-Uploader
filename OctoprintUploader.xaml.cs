@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+
 namespace OctoUploader
 {
     /// <summary>
@@ -71,7 +72,7 @@ namespace OctoUploader
             {
                 rkApp.SetValue(System.Diagnostics.Process.GetCurrentProcess().ProcessName, System.Reflection.Assembly.GetExecutingAssembly().Location);
             }
-            else
+            else if ( rkApp.GetValue (System.Diagnostics.Process.GetCurrentProcess().ProcessName) != null  )
             {
                 rkApp.DeleteValue(System.Diagnostics.Process.GetCurrentProcess().ProcessName);
             }
