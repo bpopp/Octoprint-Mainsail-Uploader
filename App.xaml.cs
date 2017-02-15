@@ -26,6 +26,7 @@ namespace OctoUploader
 
         public App ()
         {
+            System.Console.WriteLine(OctoUploader.Properties.Settings.Default.ToString());
             if (OctoUploader.Properties.Settings.Default.CallUpgrade)
             {
                 OctoUploader.Properties.Settings.Default.Upgrade();
@@ -116,9 +117,13 @@ namespace OctoUploader
         public void StopWatching ()
         {
             Console.WriteLine("Stopping the watcher.");
-            watcher.EnableRaisingEvents = false;
-            watcher.Changed -= Watcher_Changed;
-            watcher = null;
+            if (watcher != null)
+            {
+                watcher.EnableRaisingEvents = false;
+                watcher.Changed -= Watcher_Changed;
+                watcher = null;
+            }
+
         }
 
 
