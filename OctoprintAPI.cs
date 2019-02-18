@@ -20,6 +20,7 @@ namespace OctoUploader
             try
             {
                 var client = new RestClient(this.serverAddress);
+                System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
                 var request = new RestRequest("/api/files/local", Method.POST);
                 request.AddHeader("X-Api-Key", this.apiKey);
                 request.AddHeader("Content-Type", "multipart/form-data");
@@ -35,7 +36,7 @@ namespace OctoUploader
                 this.lastResultCode = response.StatusCode;
                 return response.Content;
             }
-            catch ( Exception ex )
+            catch
             {
                 this.lastResultCode = System.Net.HttpStatusCode.ExpectationFailed;
                
@@ -55,7 +56,7 @@ namespace OctoUploader
                 this.lastResultCode = response.StatusCode;
                 return response.Content;
             }
-            catch ( Exception ex )
+            catch
             {
                 this.lastResultCode = System.Net.HttpStatusCode.ExpectationFailed;
             }
@@ -64,7 +65,7 @@ namespace OctoUploader
             
         }
 
-        private String LogRequest(RestClient client, IRestRequest request, IRestResponse response, long durationMs=1000)
+        /*private String LogRequest(RestClient client, IRestRequest request, IRestResponse response, long durationMs=1000)
         {
             var requestToLog = new
             {
@@ -102,7 +103,7 @@ namespace OctoUploader
 
             Trace.Write(output);
             return output;
-        }
+        }*/
 
     }
 }

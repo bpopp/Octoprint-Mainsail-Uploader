@@ -18,10 +18,9 @@ namespace OctoUploader
     public partial class App : Application
     {
         public FileSystemWatcher watcher = null;
-        System.Timers.Timer timerFileMonitor = null;
-        Dictionary<string, long> timerFileHistory = new Dictionary<string, long>();
+        //readonly Dictionary<string, long> timerFileHistory = new Dictionary<string, long>();
 
-        TaskbarIcon tbi = new TaskbarIcon();
+        readonly TaskbarIcon tbi = new TaskbarIcon();
         OctoprintUploader settingsWindow = null;
 
         public App ()
@@ -44,14 +43,14 @@ namespace OctoUploader
             System.Windows.Controls.ContextMenu cm = new System.Windows.Controls.ContextMenu();
 
             System.Windows.Controls.MenuItem menuItemOpen =  new System.Windows.Controls.MenuItem { Header = "O_pen Octoprint" };
-            menuItemOpen.Click += open_Click;            
+            menuItemOpen.Click += Open_Click;            
 
             System.Windows.Controls.MenuItem menuItemSettings = new System.Windows.Controls.MenuItem { Header = "S_ettings" };
-            menuItemSettings.Click += settings_Click;
+            menuItemSettings.Click += Settings_Click;
 
 
             System.Windows.Controls.MenuItem menuItemExit = new System.Windows.Controls.MenuItem { Header = "E_xit" };
-            menuItemExit.Click += exit_Click;
+            menuItemExit.Click += Exit_Click;
 
             cm.Items.Add(menuItemOpen);
             cm.Items.Add(new Separator());
@@ -70,17 +69,17 @@ namespace OctoUploader
 
         }
 
-        private void open_Click(object sender, RoutedEventArgs e)
+        private void Open_Click(object sender, RoutedEventArgs e)
         {
             LaunchOctoprint();
         }
 
-        private void settings_Click(object sender, RoutedEventArgs e)
+        private void Settings_Click(object sender, RoutedEventArgs e)
         {
             ShowSettings();
         }
 
-        private void exit_Click(object sender, RoutedEventArgs e)
+        private void Exit_Click(object sender, RoutedEventArgs e)
         {
             tbi.Dispose();
             Application.Current.Shutdown();
@@ -98,17 +97,19 @@ namespace OctoUploader
             Console.WriteLine("Starting the folder watcher on " + watchFolder);
 
 
-            Stream iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/OctoUploader;component/Resources/octoprintupload.ico")).Stream;
-            System.Drawing.Icon icon = new System.Drawing.Icon(iconStream);
+            //Stream iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/OctoUploader;component/Resources/octoprintupload.ico")).Stream;
+            //System.Drawing.Icon icon = new System.Drawing.Icon(iconStream);
             //tbi.ShowBalloonTip("Octoprint Uploader", "Starting watching " + watchFolder, BalloonIcon.Info);
 
             // setup system watcher
             if (Directory.Exists(watchFolder) && watcher == null )
             {
-                watcher = new FileSystemWatcher();
-                watcher.Path = watchFolder;
-                watcher.NotifyFilter = NotifyFilters.LastWrite;
-                watcher.EnableRaisingEvents = true;
+                FileSystemWatcher watcher = new FileSystemWatcher
+                {
+                    Path = watchFolder,
+                    NotifyFilter = NotifyFilters.LastWrite,
+                    EnableRaisingEvents = true
+                };
 
                 watcher.Changed += Watcher_Changed;
             }
@@ -173,9 +174,11 @@ namespace OctoUploader
         public String UploadFile(String file)
         {
 
-            OctoprintAPI api = new OctoprintAPI();
-            api.serverAddress = OctoUploader.Properties.Settings.Default.ServerAddress;
-            api.apiKey = OctoUploader.Properties.Settings.Default.APIKey;
+            var api = new OctoprintAPI
+            {
+                serverAddress = OctoUploader.Properties.Settings.Default.ServerAddress,
+                apiKey = OctoUploader.Properties.Settings.Default.APIKey
+            };
 
             if (!File.Exists(file)) return "";
 
