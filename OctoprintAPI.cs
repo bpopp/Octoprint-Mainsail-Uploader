@@ -31,7 +31,7 @@ namespace OctoUploader
                 if (startOnUpload)
                     request.AddParameter("print", "true");
 
-                IRestResponse response = client.Execute(request);
+                var response = client.Execute(request);
                 this.lastResultCode = response.StatusCode;
                 return response.Content;
             }
