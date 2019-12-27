@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Serilog;
 
 namespace OctoUploader
 {
@@ -25,6 +26,14 @@ namespace OctoUploader
 
         public App ()
         {
+            String logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\OctoUploader\\logs\\";
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File(logDirectory + "logfile.log", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+            Log.Information("Logger started");
+
             System.Console.WriteLine(OctoUploader.Properties.Settings.Default.ToString());
             if (OctoUploader.Properties.Settings.Default.CallUpgrade)
             {
@@ -33,7 +42,7 @@ namespace OctoUploader
                 OctoUploader.Properties.Settings.Default.Save();
             }
 
-            Stream iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/OctoUploader;component/Resources/octoprintupload.ico")).Stream;
+             Stream iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/OctoUploader;component/Resources/octoprintupload.ico")).Stream;
             tbi.Icon = new System.Drawing.Icon(iconStream);
             tbi.ToolTipText = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
             tbi.TrayMouseDoubleClick += Tbi_TrayMouseDoubleClick;
@@ -94,16 +103,17 @@ namespace OctoUploader
         public void StartWatching ()
         {
             String watchFolder = OctoUploader.Properties.Settings.Default.WatchLocation;
-            Console.WriteLine("Starting the folder watcher on " + watchFolder);
-
-
-            //Stream iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/OctoUploader;component/Resources/octoprintupload.ico")).Stream;
-            //System.Drawing.Icon icon = new System.Drawing.Icon(iconStream);
-            //tbi.ShowBalloonTip("Octoprint Uploader", "Starting watching " + watchFolder, BalloonIcon.Info);
+            Log.Information("Watching {Folder} for server address {Server}",
+                OctoUploader.Properties.Settings.Default.WatchLocation,
+                OctoUploader.Properties.Settings.Default.ServerAddress);
 
             // setup system watcher
             if (Directory.Exists(watchFolder) && watcher == null )
             {
+                Log.Information("Initializing filesystem watcher @ {Location}",
+                 OctoUploader.Properties.Settings.Default.WatchLocation);
+
+
                 FileSystemWatcher watcher = new FileSystemWatcher
                 {
                     Path = watchFolder,
@@ -117,7 +127,7 @@ namespace OctoUploader
 
         public void StopWatching ()
         {
-            Console.WriteLine("Stopping the watcher.");
+            Log.Information("Uninitializing filesystem watcher.");
             if (watcher != null)
             {
                 watcher.EnableRaisingEvents = false;
@@ -130,6 +140,9 @@ namespace OctoUploader
 
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
+            Log.Information("Change detected at Watch Location {Location}",
+                e.FullPath);
+
             if (!File.Exists(e.FullPath)) return;
 
             if (e.ChangeType == WatcherChangeTypes.Changed && !IsFileLocked(e.FullPath)  )
@@ -158,6 +171,7 @@ namespace OctoUploader
                     int errorCode = Marshal.GetHRForException(ex2) & ((1 << 16) - 1);
                     if ((ex2 is IOException) && (errorCode == ERROR_SHARING_VIOLATION || errorCode == ERROR_LOCK_VIOLATION))
                     {
+                        Log.Information("IsFileLocked returning true with error code {ErrorCode}", errorCode );
                         return true;
                     }
                 }
@@ -167,6 +181,7 @@ namespace OctoUploader
                         stream.Close();
                 }
             }
+            Log.Information("IsFileLocked returning false");
             return false;
         }
 
@@ -186,7 +201,12 @@ namespace OctoUploader
             String result = api.UploadFile(file, AutoStart, AutoStart);
 
             if (api.lastResultCode == System.Net.HttpStatusCode.Created )
-            {                
+            {
+                Log.Information("Successfully uploaded file to {Filename} to {Server}",
+                    Path.GetFileName(file),
+                    OctoUploader.Properties.Settings.Default.ServerAddress
+                    );
+
                 tbi.ShowBalloonTip("Octoprint Uploader", Path.GetFileName(file) + " uploaded successfully.", BalloonIcon.Info);
 
                 if (OctoUploader.Properties.Settings.Default.DeleteOnUpload  )
@@ -196,6 +216,11 @@ namespace OctoUploader
             }
             else
             {
+                Log.Debug("Failed while uploading file {Filename} to {Server} with {ResultCode}",
+                    Path.GetFileName(file),
+                    OctoUploader.Properties.Settings.Default.ServerAddress,
+                    api.lastResultCode
+                    );
                 tbi.ShowBalloonTip("Octoprint Uploader", "Could not upload file. Check your settings and ensure that Octoprint isn't already printing.", BalloonIcon.Error);
             }
 
@@ -204,6 +229,9 @@ namespace OctoUploader
 
         public void LaunchOctoprint ()
         {
+            Log.Information ("Opening Octoprint using address {Server}",
+                    OctoUploader.Properties.Settings.Default.ServerAddress
+                    );
             System.Diagnostics.Process.Start(OctoUploader.Properties.Settings.Default.ServerAddress);
         }
 
