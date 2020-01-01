@@ -140,6 +140,9 @@ namespace OctoUploader
 
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
+            // wait a few seconds to let it finish saving
+            System.Threading.Thread.Sleep(1000);
+
             Log.Information("Change detected at Watch Location {Location}",
                 e.FullPath);
 
