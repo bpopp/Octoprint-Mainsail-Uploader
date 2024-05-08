@@ -1,4 +1,4 @@
-# OctoprintUploader
-A small Windows background application for automatically uploading gcode (or .stl) files to Octoprint. Basically you point it to a folder on a windows workstation and any gcode or stl files you copy to the folder will automatically get uploaded (and optionally printed) via REST. This works really well with Simplify3d's "Save Toolpaths to Disk" feature.
+# Octoprint/Cura/Superslicer Uploader
+A small Windows background application for automatically uploading gcode (or .stl) files to Octoprint, Cura, or Superslicer. Basically you point it to a folder on a windows workstation and any gcode or stl files you copy to the folder will automatically get uploaded (and optionally printed) via REST. This works really well with Simplify3d's "Save Toolpaths to Disk" or Superslicer's Export G-code features.
 
 ![OctoprintUploader Settings](/Design/Images/settings.png?raw=true "Optional Title")
