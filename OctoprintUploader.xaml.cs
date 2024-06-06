@@ -2,10 +2,13 @@
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -17,7 +20,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 
-namespace OctoUploader
+namespace OctoUploader 
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -28,6 +31,9 @@ namespace OctoUploader
         public delegate void ChangeHandler ();
 
         public event ChangeHandler Changed;
+        ObservableCollection<OctoPrinter> PrinterList { get; set; }
+        OctoPrinter currentItem = null;
+
 
         protected virtual void OnChanged()
         {
@@ -38,13 +44,14 @@ namespace OctoUploader
         {
             InitializeComponent();
 
+
             // init properties
-            this.serverAddress.Text = Properties.Settings.Default.ServerAddress;
-            this.apiKey.Text = Properties.Settings.Default.APIKey;
-            this.watchFolder.Text = Properties.Settings.Default.WatchLocation;
             this.removeUploads.IsChecked = Properties.Settings.Default.DeleteOnUpload;
             this.autoStart.IsChecked = Properties.Settings.Default.AutoStart;
             this.relaunchOnStartup.IsChecked = Properties.Settings.Default.RelaunchOnStartup;
+
+            PrinterList = OctoPrinter.LoadFromSettings();            
+            this.serverList.ItemsSource = PrinterList;
 
         }
 
@@ -59,12 +66,21 @@ namespace OctoUploader
         {
             Microsoft.Win32.RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
-            Properties.Settings.Default.ServerAddress = this.serverAddress.Text;
-            Properties.Settings.Default.APIKey = this.apiKey.Text;
-            Properties.Settings.Default.WatchLocation = this.watchFolder.Text;
             Properties.Settings.Default.DeleteOnUpload = (bool)this.removeUploads.IsChecked;
             Properties.Settings.Default.AutoStart = (bool)this.autoStart.IsChecked;
             Properties.Settings.Default.RelaunchOnStartup = (bool)this.relaunchOnStartup.IsChecked;
+
+            // clear existing (if any)
+            Properties.Settings.Default.ServerAddresses.Clear();
+            Properties.Settings.Default.APIKeys.Clear();
+            Properties.Settings.Default.WatchLocations.Clear();
+
+            foreach ( OctoPrinter printer in this.PrinterList )
+            {
+                Properties.Settings.Default.ServerAddresses.Add(printer.ServerAddress);
+                Properties.Settings.Default.APIKeys.Add(printer.APIKey);
+                Properties.Settings.Default.WatchLocations.Add(printer.WatchFolder);
+            }
 
             Properties.Settings.Default.Save();
 
@@ -95,6 +111,8 @@ namespace OctoUploader
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 this.watchFolder.Text = dialog.FileName;
+                this.watchFolder.Focus();
+                Keyboard.ClearFocus();
             }
         }
 
@@ -116,6 +134,40 @@ namespace OctoUploader
                 default:
                     lblWarning.Content = "Could not connect.";
                     break;
+            }
+        }
+
+        private void addButton_click(object sender, RoutedEventArgs e)
+        {
+            currentItem = new OctoPrinter() { WatchFolder = "C:\\Octopi" };
+            this.PrinterList.Add ( currentItem );
+            this.serverList.SelectedItem = currentItem;
+            this.serverAddress.Focus();
+        }
+
+        private void removeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (serverList.SelectedItem != null)
+            {
+                this.PrinterList.RemoveAt(serverList.SelectedIndex);
+            }
+        }
+
+        private void serverList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+/*            var selectedItemText = (serverList.SelectedItem ?? "(none)").ToString();
+            MessageBox.Show("Selected: " + selectedItemText);
+*/          removeButton.IsEnabled = true;
+
+            if ( serverList.SelectedItem != null )
+            {
+                currentItem = (OctoPrinter) serverList.SelectedItem;
+                if (currentItem != null ) {
+                    this.serverAddress.Text = currentItem.ServerAddress;
+                    this.apiKey.Text = currentItem.APIKey;
+                    this.watchFolder.Text = currentItem.WatchFolder;
+
+                }
             }
         }
     }

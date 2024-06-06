@@ -5,22 +5,54 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OctoUploader"
         mc:Ignorable="d"
-        Title="Octoprint Uploader Settings" Height="321.964" Width="672.808" Background="#FFF1F1F1" Icon="Resources/octoprintupload.ico">
-    <Grid>
-        <Label x:Name="label" Content="Server Address:" HorizontalAlignment="Left" Margin="10,16,0,0" VerticalAlignment="Top" Width="95"/>
-        <TextBox x:Name="serverAddress" HorizontalAlignment="Left" Height="23" Margin="119,19,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="523"/>
-        <Label x:Name="label_Copy" Content="API Key:" HorizontalAlignment="Left" Margin="10,44,0,0" VerticalAlignment="Top" Width="70"/>
-        <TextBox x:Name="apiKey" HorizontalAlignment="Left" Height="23" Margin="119,47,0,0" VerticalAlignment="Top" Width="443" Text="" />
-        <Label x:Name="label_Copy1" Content="Watch Folder:" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="watchFolder" HorizontalAlignment="Left" Height="23" Margin="119,109,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="443" IsEnabled="False"/>
-        <Button x:Name="startButton" Content="OK" HorizontalAlignment="Left" Margin="487,250,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" Click="watchButton_Click" RenderTransformOrigin="0.613,3.106"/>
-        <Button x:Name="folderSelectButton" Content="Browse.." HorizontalAlignment="Left" Margin="567,109,0,0" VerticalAlignment="Top" Width="75" Height="23" Click="folderSelectButton_Click"/>
-        <CheckBox x:Name="removeUploads" Content="Remove files after successful upload" HorizontalAlignment="Left" Margin="13,157,0,0" VerticalAlignment="Top" IsChecked="True"/>
-        <Button x:Name="cancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="567,250,0,0" VerticalAlignment="Top" Width="75" Click="watchButton_Click" RenderTransformOrigin="0.613,3.106" IsCancel="True"/>
-        <CheckBox x:Name="autoStart" Content="Automatically start printing after upload" HorizontalAlignment="Left" Margin="13,177,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="checkButton" Content="Check" HorizontalAlignment="Left" Margin="567,47,0,0" VerticalAlignment="Top" Width="75" Height="23" Click="checkButton_click"/>
-        <CheckBox x:Name="relaunchOnStartup" Content="Relaunch on Startup" HorizontalAlignment="Left" Margin="13,197,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="lblWarning" Content="" HorizontalAlignment="Left" Margin="119,75,0,0" VerticalAlignment="Top" Width="428"/>
+        Title="Octoprint Uploader Settings" Height="450.964" Width="672.808" Background="#FFF1F1F1" Icon="Resources/octoprintupload.ico"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="0,0,0,-127">
+        <!-- <DataGrid x:Name="serverList" d:ItemsSource="{d:SampleData ItemCount=5}" VerticalAlignment="Top" Margin="20,20,20,0" /> -->
+
+        <ListView  x:Name="serverList" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="20,20,0,0" Height="120" Width="545" SelectionChanged="serverList_SelectionChanged" SelectedIndex="0">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="200" Header="Server" DisplayMemberBinding="{Binding ServerAddress}"  />
+                    <GridViewColumn Width="150" Header="API Key"  DisplayMemberBinding="{Binding APIKey}" />
+                    <GridViewColumn Width="150" Header="Watch Folder" DisplayMemberBinding="{Binding WatchFolder}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button x:Name="addButton" Content="Add" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" Margin="570,20,0,0" Click="addButton_click"/>
+        <Button x:Name="removeButton" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" Margin="570,45,0,0" 
+                Click="removeButton_Click">Remove
+            <Button.Style>
+                <Style>
+                    <Style.Triggers>
+                        <DataTrigger 
+                     Binding ="{Binding ElementName=serverList, Path=SelectedIndex}" 
+                     Value="-1">
+                            <Setter Property="Button.IsEnabled" Value="false"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+
+
+        <Label x:Name="label" Content="Server Address:" HorizontalAlignment="Left" Margin="16,164,0,0" VerticalAlignment="Top" Width="95"/>
+        <TextBox x:Name="serverAddress" HorizontalAlignment="Left" Height="23" Margin="125,167,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="523" 
+                 Text="{Binding SelectedItem.ServerAddress, ElementName=serverList}"/>
+        <Label x:Name="label_Copy" Content="API Key:" HorizontalAlignment="Left" Margin="16,192,0,0" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="apiKey" HorizontalAlignment="Left" Height="23" Margin="125,195,0,0" VerticalAlignment="Top" Width="443" 
+                 Text="{Binding SelectedItem.APIKey, ElementName=serverList}"/>
+        <Label x:Name="label_Copy1" Content="Watch Folder:" HorizontalAlignment="Left" Margin="16,222,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="watchFolder" HorizontalAlignment="Left" Height="23" Margin="125,223,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="443" IsEnabled="True"
+                Text="{Binding SelectedItem.WatchFolder, ElementName=serverList, Mode=TwoWay}"/>
+        <Button x:Name="startButton" Content="OK" HorizontalAlignment="Left" Margin="487,386,0,0" VerticalAlignment="Top" Width="75" IsDefault="True" Click="watchButton_Click" RenderTransformOrigin="0.613,3.106"/>
+        <Button x:Name="folderSelectButton" Content="Browse.." HorizontalAlignment="Left" Margin="573,223,0,0" VerticalAlignment="Top" Width="75" Height="23" Click="folderSelectButton_Click"/>
+        <CheckBox x:Name="removeUploads" Content="Remove files after successful upload" HorizontalAlignment="Left" Margin="18,301,0,0" VerticalAlignment="Top" IsChecked="True"/>
+        <Button x:Name="cancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="567,386,0,0" VerticalAlignment="Top" Width="75" Click="watchButton_Click" RenderTransformOrigin="0.613,3.106" IsCancel="True"/>
+        <CheckBox x:Name="autoStart" Content="Automatically start printing after upload" HorizontalAlignment="Left" Margin="18,321,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="checkButton" Content="Check" HorizontalAlignment="Left" Margin="573,195,0,0" VerticalAlignment="Top" Width="75" Height="23" Click="checkButton_click"/>
+        <CheckBox x:Name="relaunchOnStartup" Content="Relaunch on Startup" HorizontalAlignment="Left" Margin="18,341,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblWarning" Content="" HorizontalAlignment="Left" Margin="128,251,0,0" VerticalAlignment="Top" Width="428"/>
 
     </Grid>
 </Window>

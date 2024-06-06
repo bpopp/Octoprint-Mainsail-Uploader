@@ -140,6 +140,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="OctoPrinter.cs" />
     <Compile Include="OctoprintUploader.xaml.cs">
       <DependentUpon>OctoprintUploader.xaml</DependentUpon>
       <SubType>Code</SubType>
